@@ -10,4 +10,5 @@ venv
 .Spotlight-V100
 .Trashes
 ehthumbs.db
-Thumbs.db
+Thumbs.dbfrontend/node_modules/
+frontend/node_modules/*
