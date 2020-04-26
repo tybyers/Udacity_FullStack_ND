@@ -21,7 +21,7 @@ SET default_tablespace = '';
 SET default_with_oids = false;
 
 --
--- Name: categories; Type: TABLE; Schema: public; Owner: tylerbyers
+-- Name: categories; Type: TABLE; Schema: public; Owner: git byers
 --
 
 CREATE TABLE public.categories (
