@@ -54,7 +54,6 @@ def create_app(test_config=None):
       'categories': list(categories)
     })
 
-
   @app.route('/questions', methods=['GET'])
   def get_questions():
     q_list = Question.query.order_by(Question.id).all()
@@ -71,7 +70,6 @@ def create_app(test_config=None):
       'total_questions': len(q_list),
       'categories': categories
     })
-
     
   '''
   @TODO: 
