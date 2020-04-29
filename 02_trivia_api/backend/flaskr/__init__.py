@@ -70,27 +70,26 @@ def create_app(test_config=None):
       'total_questions': len(q_list),
       'categories': categories
     })
-    
-  '''
-  @TODO: 
-  Create an endpoint to handle GET requests for questions, 
-  including pagination (every 10 questions). 
-  This endpoint should return a list of questions, 
-  number of total questions, current category, categories. 
 
-  TEST: At this point, when you start the application
-  you should see questions and categories generated,
-  ten questions per page and pagination at the bottom of the screen for three pages.
-  Clicking on the page numbers should update the questions. 
-  '''
+  @app.route('/questions/<int:question_id>', methods=['DELETE'])
+  def delete_question(question_id):
 
-  '''
-  @TODO: 
-  Create an endpoint to DELETE question using a question ID. 
+    delete_me = Question.query.get(question_id)
 
-  TEST: When you click the trash icon next to a question, the question will be removed.
-  This removal will persist in the database and when you refresh the page. 
-  '''
+    if delete_me is None:
+      abort(404)
+
+    delete_me.delete()
+
+    #still there?
+    delete_me_again = Question.query.get(question_id)
+    if delete_me_again is not None:
+      abort(404)
+
+    return jsonify({
+      'success': True
+    })
+
 
   '''
   @TODO: 
@@ -122,7 +121,23 @@ def create_app(test_config=None):
   categories in the left column will cause only questions of that 
   category to be shown. 
   '''
+  @app.route('/categories/<int:category_id>/questions', methods=['GET'])
+  def get_questions_by_category(category_id):
+    q_list = Question.query.filter(Question.category == category_id).order_by(Question.id).all()
+    paginated_questions = paginate_questions(request, q_list)
 
+    cat_name = Category.query.get(category_id).type
+    print('cat_name: {}'.format(cat_name))
+
+    if len(paginated_questions) == 0:
+      abort(404)
+
+    return jsonify({
+      'success': True,
+      'questions': paginated_questions,
+      'total_questions': len(q_list),
+      'currentCategory': cat_name
+    })
 
   '''
   @TODO: 
