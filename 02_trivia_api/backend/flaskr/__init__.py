@@ -37,11 +37,6 @@ def create_app(test_config=None):
     response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
     return response
 
-  '''
-  @TODO: 
-  Create an endpoint to handle GET requests 
-  for all available categories.
-  '''
   @app.route('/categories', methods=['GET'])
   def get_categories():
     categories = Category.query.all()
@@ -92,17 +87,6 @@ def create_app(test_config=None):
       'success': True
     })
 
-
-  '''
-  @TODO: 
-  Create an endpoint to POST a new question, 
-  which will require the question and answer text, 
-  category, and difficulty score.
-
-  TEST: When you submit a question on the "Add" tab, 
-  the form will clear and the question will appear at the end of the last page
-  of the questions list in the "List" tab.  
-  '''
   @app.route('/questions', methods=['POST'])
   def submit_question():#question, answer, difficulty, category):
 
@@ -122,32 +106,29 @@ def create_app(test_config=None):
       'success': True
     })
   
+  @app.route('/questions/search', methods=['POST'])
+  def search_questions():
+    term = request.get_json().get('searchTerm', None)
+    q_list = Question.query.filter(Question.question.ilike('%{}%'.format(term))).all()
+    paginated_questions = paginate_questions(request, q_list)
 
-  '''
-  @TODO: 
-  Create a POST endpoint to get questions based on a search term. 
-  It should return any questions for whom the search term 
-  is a substring of the question. 
+    categories = {c.id: c.type for c in Category.query.all()}
 
-  TEST: Search by any phrase. The questions list will update to include 
-  only question that include that string within their question. 
-  Try using the word "title" to start. 
-  '''
+    return jsonify({
+      'success': True,
+      'questions': paginated_questions,
+      'total_questions': len(q_list),
+      'categories': categories
+    })
+    
 
-  '''
-  @TODO: 
-  Create a GET endpoint to get questions based on category. 
-
-  TEST: In the "List" tab / main screen, clicking on one of the 
-  categories in the left column will cause only questions of that 
-  category to be shown. 
-  '''
+  
   @app.route('/categories/<int:category_id>/questions', methods=['GET'])
   def get_questions_by_category(category_id):
     q_list = Question.query.filter(Question.category == category_id).order_by(Question.id).all()
     paginated_questions = paginate_questions(request, q_list)
 
-    cat_name = Category.query.get(category_id).type
+    #cat_name = Category.query.get(category_id).type
 
     if len(paginated_questions) == 0:
       abort(404)
@@ -156,7 +137,7 @@ def create_app(test_config=None):
       'success': True,
       'questions': paginated_questions,
       'total_questions': len(q_list),
-      'currentCategory': cat_name
+      'currentCategory': category_id
     })
 
   '''
