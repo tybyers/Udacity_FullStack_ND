@@ -46,7 +46,7 @@ def create_app(test_config=None):
   def get_categories():
     categories = Category.query.all()
 
-    cat_list = [cat.type for cat in categories]
+    cat_list = {cat.id: cat.type for cat in categories}
 
     if len(categories) == 0:
       abort(404)
@@ -103,6 +103,25 @@ def create_app(test_config=None):
   the form will clear and the question will appear at the end of the last page
   of the questions list in the "List" tab.  
   '''
+  @app.route('/questions', methods=['POST'])
+  def submit_question():#question, answer, difficulty, category):
+
+    data = request.get_json()
+    print('Category: {}'.format(data['category']))
+    try:
+      Question(
+        question = data['question'],
+        answer = data['answer'],
+        category = data['category'],
+        difficulty = data['difficulty']
+      ).insert()
+    except:
+      abort(404)
+
+    return jsonify({
+      'success': True
+    })
+  
 
   '''
   @TODO: 
@@ -129,7 +148,6 @@ def create_app(test_config=None):
     paginated_questions = paginate_questions(request, q_list)
 
     cat_name = Category.query.get(category_id).type
-    print('cat_name: {}'.format(cat_name))
 
     if len(paginated_questions) == 0:
       abort(404)
