@@ -44,14 +44,16 @@ def create_app(test_config=None):
   '''
   @app.route('/categories', methods=['GET'])
   def get_categories():
-    categories = Categories.query.all()
+    categories = Category.query.all()
+
+    cat_list = [cat.type for cat in categories]
 
     if len(categories) == 0:
       abort(404)
 
     return jsonify({
       'success': True,
-      'categories': list(categories)
+      'categories': cat_list
     })
 
   @app.route('/questions', methods=['GET'])
