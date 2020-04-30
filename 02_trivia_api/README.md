@@ -1,5 +1,11 @@
 # Full Stack API Final Project
 
+This project is submitted to fulfill requirements for the second project in the [Udacity Full Stack Web Developer Nanodegree](https://www.udacity.com/course/full-stack-web-developer-nanodegree--nd0044). Please see below for the original project instructions.
+
+Please see the README in the [backend](./backend) folder for instructions on Getting Started, along with Endpoint information/documentation.
+
+-----
+
 ## Full Stack Trivia
 
 Udacity is invested in creating bonding experiences for its employees and students. A bunch of team members got the idea to hold trivia on a regular basis and created a  webpage to manage the trivia app and play the game, but their API experience is limited and still needs to be built out. 
