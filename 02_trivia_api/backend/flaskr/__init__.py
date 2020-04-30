@@ -33,6 +33,17 @@ def create_app(test_config=None):
 
   @app.route('/categories', methods=['GET'])
   def get_categories():
+    """
+    Get all available categories for questions in the database. 
+
+    Parameters:
+    ----------
+    None
+
+    Returns:
+    -------
+    Dictionary of categories - {id: type}
+    """
     categories = Category.query.all()
 
     cat_list = {cat.id: cat.type for cat in categories}
@@ -47,6 +58,17 @@ def create_app(test_config=None):
 
   @app.route('/questions', methods=['GET'])
   def get_questions():
+    """
+    Get all questions available in the database.
+    
+    Parameters:
+    ----------
+    None
+    
+    Returns:
+    -------
+    Paginated list of questions, total questions, and the categories for the questions. 
+    """
     q_list = Question.query.order_by(Question.id).all()
     paginated_questions = paginate_questions(request, q_list)
 
@@ -64,6 +86,18 @@ def create_app(test_config=None):
 
   @app.route('/questions/<int:question_id>', methods=['DELETE'])
   def delete_question(question_id):
+    """
+    Deletes a question from the database, given the question id.
+
+    Parameters:
+    ----------
+    question_id: Primary key for question
+
+    Returns:
+    -------
+    Success notification
+
+    """
 
     delete_me = Question.query.get(question_id)
 
@@ -82,6 +116,17 @@ def create_app(test_config=None):
 
   @app.route('/questions', methods=['POST'])
   def submit_question():
+    """
+    Submit a new question to the database. Done from the "Add" tab
+
+    Parameters:
+    ----------
+    None
+
+    Returns:
+    -------
+    Success notification
+    """
 
     data = request.get_json()
     print('Category: {}'.format(data['category']))
@@ -101,6 +146,17 @@ def create_app(test_config=None):
   
   @app.route('/questions/search', methods=['POST'])
   def search_questions():
+    """
+    Search question text for a given string, done from the Search box in the List tab
+
+    Parameters:
+    ----------
+    None
+    
+    Returns:
+    -------
+    List of questions matching the search string.
+    """
     term = request.get_json().get('searchTerm', None)
     try: 
       q_list = Question.query.filter(Question.question.ilike('%{}%'.format(term))).all()
@@ -120,6 +176,17 @@ def create_app(test_config=None):
 
   @app.route('/categories/<int:category_id>/questions', methods=['GET'])
   def get_questions_by_category(category_id):
+    """
+    Get a list of questions given the category ID
+
+    Parameters:
+    ----------
+    category_id: Primary key of the Categories table
+    
+    Returns:
+    -------
+    List of questions matching the category.
+    """
     try:
       q_list = Question.query.filter(Question.category == category_id).order_by(Question.id).all()
       paginated_questions = paginate_questions(request, q_list)
@@ -135,6 +202,20 @@ def create_app(test_config=None):
 
   @app.route('/quizzes', methods=['POST'])
   def play_quiz():
+    """
+    Play the quiz game. After user chooses a category, chooses a question from that category (or ALL),
+    which hasn't been shown to the user before. If there are no more unseen questions remaining, 
+    the game ends.
+
+    Parameters:
+    ----------
+    None
+    
+    Returns:
+    -------
+    Question to be asked and a list of the previous questions asked (by ID). 
+
+    """
     category = request.get_json().get('quiz_category', 0)
     prev_qs = request.get_json().get('previous_questions', [])
 
@@ -161,7 +242,7 @@ def create_app(test_config=None):
         "question": cur_question
       })
     except:
-      abort(404)
+      abort(422)
 
   @app.errorhandler(404)
   def not_found(error):
