@@ -23,14 +23,8 @@ def create_app(test_config=None):
   app = Flask(__name__)
   setup_db(app)
   
-  '''
-  @TODO: Set up CORS. Allow '*' for origins. Delete the sample route after completing the TODOs
-  '''
   CORS(app)
 
-  '''
-  @TODO: Use the after_request decorator to set Access-Control-Allow
-  '''
   @app.after_request
   def after_request(response):
     response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization,true')
@@ -74,21 +68,20 @@ def create_app(test_config=None):
     delete_me = Question.query.get(question_id)
 
     if delete_me is None:
-      abort(404)
-
+      abort(422)
     delete_me.delete()
 
-    #still there?
+    # Make sure it was deleted by checking if it is still there.
     delete_me_again = Question.query.get(question_id)
     if delete_me_again is not None:
-      abort(404)
+      abort(422)
 
     return jsonify({
       'success': True
     })
 
   @app.route('/questions', methods=['POST'])
-  def submit_question():#question, answer, difficulty, category):
+  def submit_question():
 
     data = request.get_json()
     print('Category: {}'.format(data['category']))
@@ -100,7 +93,7 @@ def create_app(test_config=None):
         difficulty = data['difficulty']
       ).insert()
     except:
-      abort(404)
+      abort(422)
 
     return jsonify({
       'success': True
@@ -109,54 +102,100 @@ def create_app(test_config=None):
   @app.route('/questions/search', methods=['POST'])
   def search_questions():
     term = request.get_json().get('searchTerm', None)
-    q_list = Question.query.filter(Question.question.ilike('%{}%'.format(term))).all()
-    paginated_questions = paginate_questions(request, q_list)
+    try: 
+      q_list = Question.query.filter(Question.question.ilike('%{}%'.format(term))).all()
+      paginated_questions = paginate_questions(request, q_list)
 
-    categories = {c.id: c.type for c in Category.query.all()}
+      categories = {c.id: c.type for c in Category.query.all()}
 
-    return jsonify({
-      'success': True,
-      'questions': paginated_questions,
-      'total_questions': len(q_list),
-      'categories': categories
-    })
+      return jsonify({
+        'success': True,
+        'questions': paginated_questions,
+        'total_questions': len(q_list),
+        'categories': categories
+      })
+    except:
+      abort(404)
     
 
-  
   @app.route('/categories/<int:category_id>/questions', methods=['GET'])
   def get_questions_by_category(category_id):
-    q_list = Question.query.filter(Question.category == category_id).order_by(Question.id).all()
-    paginated_questions = paginate_questions(request, q_list)
+    try:
+      q_list = Question.query.filter(Question.category == category_id).order_by(Question.id).all()
+      paginated_questions = paginate_questions(request, q_list)
 
-    #cat_name = Category.query.get(category_id).type
-
-    if len(paginated_questions) == 0:
+      return jsonify({
+        'success': True,
+        'questions': paginated_questions,
+        'total_questions': len(q_list),
+        'current_category': category_id
+      })
+    except:
       abort(404)
 
+  @app.route('/quizzes', methods=['POST'])
+  def play_quiz():
+    category = request.get_json().get('quiz_category', 0)
+    prev_qs = request.get_json().get('previous_questions', [])
+
+    try:
+      if category['id'] == 0:
+        questions = Question.query.all()
+      else:
+        questions = Question.query.filter(Question.category == category['id']).all()
+        
+      pick_from_questions = []
+      for q in questions:
+        q_format = q.format()
+        if q_format['id'] not in prev_qs:
+          pick_from_questions.append(q_format)
+
+      if len(pick_from_questions) == 0:
+        cur_question = False
+      else:
+        cur_question = random.choice(pick_from_questions)
+        prev_qs.append(cur_question)
+
+      return jsonify({
+        "success": True,
+        "question": cur_question
+      })
+    except:
+      abort(404)
+
+  @app.errorhandler(404)
+  def not_found(error):
     return jsonify({
-      'success': True,
-      'questions': paginated_questions,
-      'total_questions': len(q_list),
-      'currentCategory': category_id
-    })
+      "success": False,
+      "error": 404,
+      "message": "Cannot find resource"
+    }), 404
+  
+  return app
 
-  '''
-  @TODO: 
-  Create a POST endpoint to get questions to play the quiz. 
-  This endpoint should take category and previous question parameters 
-  and return a random questions within the given category, 
-  if provided, and that is not one of the previous questions. 
+  @app.errorhandler(422)
+  def unprocessable(error):
+    return jsonify({
+      "success": False,
+      "error": 422,
+      "message": "Cannot process"
+    }), 422
 
-  TEST: In the "Play" tab, after a user selects "All" or a category,
-  one question at a time is displayed, the user is allowed to answer
-  and shown whether they were correct or not. 
-  '''
+  @app.errorhandler(400)
+  def bad_request(error):
+    return jsonify({
+      "success": False,
+      "error": 400,
+      "message": "Bad request"
+    }), 400
 
-  '''
-  @TODO: 
-  Create error handlers for all expected errors 
-  including 404 and 422. 
-  '''
+  @app.errorhandler(405)
+  def bad_request(error):
+    return jsonify({
+      "success": False,
+      "error": 405,
+      "message": "Method not allowed"
+    }), 405
   
   return app
 
