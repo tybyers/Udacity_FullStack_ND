@@ -96,7 +96,6 @@ def create_app(test_config=None):
     Returns:
     -------
     Success notification
-
     """
 
     delete_me = Question.query.get(question_id)
@@ -180,7 +179,7 @@ def create_app(test_config=None):
 
     Parameters:
     ----------
-    category_id: Primary key of the Categories table
+    category_id: Primary key of the Categories table.
     
     Returns:
     -------
@@ -213,7 +212,6 @@ def create_app(test_config=None):
     Returns:
     -------
     Question to be asked and a list of the previous questions asked (by ID). 
-
     """
     category = request.get_json().get('quiz_category', 0)
     prev_qs = request.get_json().get('previous_questions', [])
@@ -277,5 +275,3 @@ def create_app(test_config=None):
     }), 422
   
   return app
-
-    
