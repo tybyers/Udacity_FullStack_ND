@@ -71,7 +71,7 @@ def get_drink_details(payload):
 '''
 @app.route('/drinks', methods=['POST'])
 @requires_auth('post:drinks')
-def create_drink():
+def create_drink(payload):
     body = request.get_json()
     if body is None:
         abort(404)
@@ -109,7 +109,31 @@ def create_drink():
     returns status code 200 and json {"success": True, "drinks": drink} where drink an array containing only the updated drink
         or appropriate status code indicating reason for failure
 '''
+@app.route('/drinks/<int:id>', methods=['PATCH'])
+@requires_auth('patch:drinks')
+def update_drink(payload, id):
+    # first get whatever going to patch
+    body = request.get_json()
+    if body is None:
+        abort(404)
+    title = body.get('title', None)
+    recipe = body.get('recipe', None)
+    old_drink = Drink.query.get(id)
+    if old_drink is None:
+        abort(404)
+    if title is not None:
+        old_drink.title = title
+    if recipe is not None:
+        old_drink.recipe = json.dumps(recipe)
 
+    try:
+        old_drink.update()
+        return jsonify({
+            'success': True,
+            'drinks': Drink.long(old_drink)
+        })
+    except:
+        abort(404)
 
 '''
 @TODO implement endpoint
@@ -121,6 +145,22 @@ def create_drink():
     returns status code 200 and json {"success": True, "delete": id} where id is the id of the deleted record
         or appropriate status code indicating reason for failure
 '''
+@app.route('/drinks/<int:id>', methods=['DELETE'])
+@requires_auth('delete:drinks')
+def delete_drink(payload, id):
+    # first get whatever going to patch
+    doomed_drink = Drink.query.get(id)
+    if doomed_drink is None:
+        abort(404)
+
+    try:
+        doomed_drink.delete()
+        return jsonify({
+            'success': True,
+            'delete': id
+        })
+    except:
+        abort(404)
 
 
 ## Error Handling
@@ -170,9 +210,9 @@ def not_found(error):
     error handler should conform to general task above 
 '''
 @app.errorhandler(AuthError)
-def authentification_failed(AuthError):
+def authentication_failed(AuthError):
     return jsonify({
         "success": False,
         "error": AuthError.status_code,
-        "message": "authentification failed"
+        "message": "Authentication failed: {}".format(AuthError)
         }), 401
