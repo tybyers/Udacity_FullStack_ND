@@ -17,7 +17,7 @@ CORS(app)
 !! NOTE THIS MUST BE UNCOMMENTED ON FIRST RUN
 '''
 
-#db_drop_and_create_all()
+db_drop_and_create_all()
 
 ## ROUTES
 '''
@@ -78,11 +78,6 @@ def create_drink(payload):
     title = body['title']
     recipe = body['recipe']
 
-    # check to make sure recipe is correctly formed
-    for recipe_part in ['color', 'name', 'parts']:
-        if recipe_part not in recipe:
-            abort(400)
-
     # drink should be a list if it is not
     if not isinstance(recipe, list):
         recipe = [recipe]
@@ -130,7 +125,7 @@ def update_drink(payload, id):
         old_drink.update()
         return jsonify({
             'success': True,
-            'drinks': Drink.long(old_drink)
+            'drinks': [old_drink.long()]
         })
     except:
         abort(404)
