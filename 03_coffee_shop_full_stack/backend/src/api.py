@@ -50,7 +50,7 @@ def get_drinks():
 '''
 @app.route('/drinks-detail', methods=['GET'])
 @requires_auth('get:drinks-detail')
-def get_drink_details():
+def get_drink_details(payload):
     drinks = Drink.query.all()
     shorts = [drink.long() for drink in drinks]
     if len(shorts) == 0:
@@ -145,14 +145,34 @@ def unprocessable(error):
                     }), 404
 
 '''
+@app.errorhandler(401)
+def unauthorized(error):
+    return jsonify({
+        "success": False,
+        "error": 401,
+        "message": "Unauthorized"
+    }), 401
 
 '''
 @TODO implement error handler for 404
     error handler should conform to general task above 
 '''
-
+@app.errorhandler(404)
+def not_found(error):
+    return jsonify({
+        "success": False,
+        "error": 404,
+        "message": "Not Found"
+    }), 404
 
 '''
 @TODO implement error handler for AuthError
     error handler should conform to general task above 
 '''
+@app.errorhandler(AuthError)
+def authentification_failed(AuthError):
+    return jsonify({
+        "success": False,
+        "error": AuthError.status_code,
+        "message": "authentification failed"
+        }), 401
