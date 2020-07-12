@@ -11,3 +11,6 @@ venv
 .Trashes
 ehthumbs.db
 Thumbs.db
+capstone/heroku_sample/*
+capstone/fsnd_capstone_rubric.pdf
+capstone/instructions.md
