@@ -1,0 +1,17 @@
+<html>
+    <head>
+        <title>Racing Central</title>
+    </head>
+    <body>
+        <ul>
+            {% for d in data %}
+            <li><b>{{d.name}}</b>
+                <ul>
+                    <li><b>Distance:</b> {{d.distance_name}}</li>
+                    <li><b>Date:</b> {{d.date}}</li>
+                </ul>
+            </li>
+            {% endfor %}
+        </ul>
+    </body>
+</html>

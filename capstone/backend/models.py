@@ -39,14 +39,16 @@ class Race(db.Model):
     name = Column(string)
     city = Column(string)
     state = Column(string)
+    website = Column(string)
     distance_id = Column(Integer, ForeignKey('distance.id'))
     distance_name = relationship('Distance', back_populates="name"))
     date = Column(Date)
 
-    def __init__(self, name, city, state, distance_id, date):
+    def __init__(self, name, city, state, distance_id, website, date):
         self.name = name
         self.city = city
         self.state = state
+        self.website = website
         self.distance_id = distance_id
         self.date = date
 
