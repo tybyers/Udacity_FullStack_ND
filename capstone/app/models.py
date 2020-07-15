@@ -1,5 +1,5 @@
 import os
-from sqlalchemy import Column, String, Integer, relationship, backref, Float, Date
+from sqlalchemy import Column, String, Integer, Float, Date, ForeignKey
 from flask_sqlalchemy import SQLAlchemy
 import json
 
@@ -17,7 +17,7 @@ def setup_db(app):
     ----------
     app: Flask app
     """
-    app.config["SQLALCHEMY_DATABASE_URI"] = db_path
+    app.config["SQLALCHEMY_DATABASE_URI"] = database_path
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     db.app = app
     db.init_app(app)
@@ -36,12 +36,12 @@ class Race(db.Model):
     __tablename__ = 'races'
 
     id = Column(Integer, primary_key=True)
-    name = Column(string)
-    city = Column(string)
-    state = Column(string)
-    website = Column(string)
+    name = Column(String)
+    city = Column(String)
+    state = Column(String)
+    website = Column(String)
     distance_id = Column(Integer, ForeignKey('distance.id'))
-    distance_name = relationship('Distance', back_populates="name"))
+    distance_name = db.relationship('Distance', back_populates="name")
     date = Column(Date)
 
     def __init__(self, name, city, state, distance_id, website, date):
@@ -69,9 +69,10 @@ class Race(db.Model):
             'name': self.name,
             'city': self.city,
             'state': self.state,
-            'distance_id' = self.distance_id,
+            'distance_id': self.distance_id,
             #distance_name = self.distance_name 
-            'date' = self.date
+            'date': self.date,
+            'website': self.website
         }
 
 class Distance(db.Model):
@@ -79,7 +80,7 @@ class Distance(db.Model):
     Foot race distances
     """
     id = Column(Integer, primary_key=True)
-    name = Column(string)
+    name = Column(String)
     distance_km = Column(Float)
     distance_mi = Column(Float)
 
