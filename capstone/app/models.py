@@ -33,7 +33,7 @@ class Race(db.Model):
     """
     Name of foot race, location, distance, and date of competition
     """
-    __tablename__ = 'races'
+    __tablename__ = 'race'
 
     id = Column(Integer, primary_key=True)
     name = Column(String)
@@ -41,7 +41,7 @@ class Race(db.Model):
     state = Column(String)
     website = Column(String)
     distance_id = Column(Integer, ForeignKey('distance.id'))
-    distance_name = db.relationship('Distance', back_populates="name")
+    #distance_name = db.relationship('Distance', back_populates="name")
     date = Column(Date)
 
     def __init__(self, name, city, state, distance_id, website, date):
@@ -79,6 +79,8 @@ class Distance(db.Model):
     """
     Foot race distances
     """
+    __tablename__ = 'distance'
+
     id = Column(Integer, primary_key=True)
     name = Column(String)
     distance_km = Column(Float)

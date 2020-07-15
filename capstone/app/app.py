@@ -2,6 +2,7 @@ import os
 from flask import Flask, request, abort, jsonify, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
+import datetime
 
 from .models import db_drop_and_create_all, setup_db, Race, Distance
 
@@ -15,21 +16,45 @@ def create_app(test_config=None):
 
 app = create_app()
 
-db_drop_and_create_all()
+#db_drop_and_create_all()
 
 @app.route('/')
 def index():
-  return render_template('pages/index.html', data=[{
-    'name': 'MTC Marathon', 'distance_name': 'Marathon', 'date': '5 Oct 2020',
-    'website': 'https://www.tcmevents.org/'
-  }, {
-    'name': 'Riverbank Run', 'distance_name': '25K', 'date': '20 Oct 2020',
-    'website': 'https://amwayriverbankrun.com/'
-  }, {
-    'name': 'Bloomsday', 'distance_name': '12K', 'date': '20 Sept 2020',
-    'website': 'https://www.bloomsdayrun.org/'
-  }])
+  # TODO: Replace this with a render of a more useful index page
+  data = get_races().get_json()['races']
+  print(data)
+  return render_template('pages/index.html', data=data)
 
+@app.route('/races', methods=['GET'])
+def get_races():
+  # join with distances to get distance name
+  upcoming_races = Race.query.filter(Race.date >= datetime.datetime.today()).all()
+  past_races = Race.query.filter(Race.date < datetime.datetime.today()).all()
+  print(past_races)
+
+  # TODO: build in something to differentiate current races from past races
+  def fill_details(raceq):
+    return [{
+      "id": r.id,
+      "name": r.name,
+      "city": r.city,
+      "state": r.state,
+      "website": r.website,
+      "distance_id": r.distance_id,
+      "date": r.date
+    } for r in raceq]
+
+  race_details = {}
+  race_details['upcoming'] = fill_details(upcoming_races)
+  race_details['past'] = fill_details(past_races)
+
+  if len(race_details['upcoming']) + len(race_details['past']) == 0:
+    abort(404)
+
+  return jsonify({
+    'success': True,
+    'races': race_details
+  })
 
 ## ------------------------
 ## Launch app
