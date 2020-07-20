@@ -41,7 +41,6 @@ class Race(db.Model):
     state = Column(String)
     website = Column(String)
     distance_id = Column(Integer, ForeignKey('distance.id'))
-    #distance_name = db.relationship('Distance', back_populates="name")
     date = Column(Date)
 
     def __init__(self, name, city, state, distance_id, website, date):
@@ -85,11 +84,23 @@ class Distance(db.Model):
     name = Column(String)
     distance_km = Column(Float)
     distance_mi = Column(Float)
+    races = db.relationship("Race", backref="distance")
 
     def __init__(self, name, distance_km):
         self.name = name
         self.distance_km = distance_km
         self.distance_mi = distance_km * 0.621371
+
+    def insert(self):
+        db.session.add(self)
+        db.session.commit()
+
+    def update(self):
+        db.session.commit()
+
+    def delete(self):
+        db.session.delete(self)
+        db.session.commit()
 
     def format(self):
         return {
