@@ -21,11 +21,11 @@ app = create_app()
 @app.route('/')
 def index():
   # TODO: Replace this with a render of a more useful index page
-  data = get_races().get_json()['races']
+  data = get_races().get_json()['race']
   print(data)
   return render_template('pages/index.html', data=data)
 
-@app.route('/races', methods=['GET'])
+@app.route('/race', methods=['GET'])
 def get_races():
   # join with distances to get distance name
   upcoming_races = Race.query.filter(Race.date >= datetime.datetime.today()).all()
