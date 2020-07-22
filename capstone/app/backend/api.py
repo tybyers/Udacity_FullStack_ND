@@ -54,7 +54,7 @@ def get_distances():
   dists = {}
   for dist in distances:
     dists[dist.id] = {'name': dist.name, 'distance_km': dist.distance_km,
-                      'distance_miles': dist.distance_mi}
+                      'distance_mi': dist.distance_mi}
 
   if len(dists) == 0:
     abort(404)
@@ -133,21 +133,96 @@ def submit_distance():
   })
 
 @app.route('/races/<int:id>', methods=['PATCH'])
-def update_race(payload, id):
-  raise NotImplementedError
+def update_race(id):
+  # the only thing we should update for a race is the website,
+  #  so that we can change the website to the results page
+  data = request.get_json()
+  if data is None:
+    abort(422)
+
+  old_race = Race.query.get(id)
+  if old_race is None:
+    abort(404)
+
+  website = data.get('website', None)
+  if website is not None:
+    old_race.website = website
+  else:
+    abort(422)
+
+  try:
+    old_race.update()
+    return jsonify({
+      'success': True
+    })
+  except:
+    abort(422)
 
 @app.route('/distances/<int:id>', methods=['PATCH'])
-def update_distance(payload, id):
-  raise NotImplementedError
+def update_distance(id):
+  data = request.get_json()
+  if data is None:
+    abort(422)
+  name = data.get('name', None)
+  distance_km = data.get('distance_km', None)
+  distance_mi = data.get('distance_mi', None)
+  if set([name, distance_km, distance_mi]) == {None}:
+    abort(422)
+
+  old_distance = Distance.query.get(id)
+  if old_distance is None:
+    abort(404)
+  if name is not None:
+    old_distance.name = name
+  if distance_km is not None:
+    old_distance.distance_km = distance_km
+    old_distance.distance_mi = round(distance_km * KM_2_MILE, 2)
+  elif distance_mi is not None:
+    old_distance.distance_km = round(distance_mi / KM_2_MILE, 2)
+    old_distance.distance_mi = distance_mi
+
+  try:
+    old_distance.update()
+    return jsonify({
+      'success': True
+    })
+  except:
+    abort(422)
 
 @app.route('/races/<int:id>', methods=['DELETE'])
-def delete_race(payload, id):
-  raise NotImplementedError
+def delete_race(id):
+  delete_me = Race.query.get(id)
+
+  if delete_me is None:
+    abort(422)
+  delete_me.delete()
+
+  # Make sure it was deleted by checking if it is still there.
+  delete_me_again = Race.query.get(id)
+  if delete_me_again is not None:
+    abort(422)
+
+  return jsonify({
+    'success': True
+  })
+
 
 @app.route('/distances/<int:id>', methods=['DELETE'])
-def delete_distance(payload, id):
-  raise NotImplementedError
+def delete_distance(id):
+  delete_me = Distance.query.get(id)
 
+  if delete_me is None:
+    abort(422)
+  delete_me.delete()
+
+  # Make sure it was deleted by checking if it is still there.
+  delete_me_again = Distance.query.get(id)
+  if delete_me_again is not None:
+    abort(422)
+
+  return jsonify({
+    'success': True
+  })
 
 ## Error handling
 @app.errorhandler(400)
@@ -166,10 +241,7 @@ def unauthorized(error):
         "message": "Unauthorized"
     }), 401
 
-'''
-@TODO implement error handler for 404
-    error handler should conform to general task above 
-'''
+
 @app.errorhandler(404)
 def not_found(error):
     return jsonify({
