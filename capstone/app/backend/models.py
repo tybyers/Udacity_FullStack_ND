@@ -7,6 +7,8 @@ db_filename = "database.db"
 proj_dir = os.path.dirname(os.path.abspath(__file__))
 database_path = "sqlite:///{}".format(os.path.join(proj_dir, db_filename))
 
+KM_2_MILE = 0.621371
+
 db = SQLAlchemy()
 
 def setup_db(app):
@@ -89,7 +91,7 @@ class Distance(db.Model):
     def __init__(self, name, distance_km):
         self.name = name
         self.distance_km = distance_km
-        self.distance_mi = distance_km * 0.621371
+        self.distance_mi = round(distance_km * KM_2_MILE, 2)
 
     def insert(self):
         db.session.add(self)

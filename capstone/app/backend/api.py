@@ -2,9 +2,11 @@ import os
 from flask import Flask, request, abort, jsonify, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
-import datetime
+from datetime import datetime
 
 from .models import db_drop_and_create_all, setup_db, Race, Distance
+
+KM_2_MILE = 0.621371
 
 def create_app(test_config=None):
   # create and configure the app
@@ -20,20 +22,18 @@ app = create_app()
 
 @app.route('/races', methods=['GET'])
 def get_races():
-  # join with distances to get distance name
-  upcoming_races = Race.query.filter(Race.date >= datetime.datetime.today()).all()
-  past_races = Race.query.filter(Race.date < datetime.datetime.today()).all()
+  upcoming_races = Race.query.filter(Race.date >= datetime.today()).all()
+  past_races = Race.query.filter(Race.date < datetime.today()).all()
 
   def fill_details(raceq):
-    return [{
-      "id": r.id,
+    return {r.id: {
       "name": r.name,
       "city": r.city,
       "state": r.state,
       "website": r.website,
       "distance_id": r.distance_id,
       "date": r.date
-    } for r in raceq]
+    } for r in raceq}
 
   race_details = {}
   race_details['upcoming'] = fill_details(upcoming_races)
@@ -76,7 +76,7 @@ def get_race_detail(id):
                 'city': race.city, 'state': race.state,
                 'distance_name': race.distance.name,
                 'distance_km': race.distance.distance_km,
-                'distance_miles': race.distance.distance_mi,
+                'distance_mi': race.distance.distance_mi,
                 'website': race.website,
                 'race_id': id, 'distance_id': race.distance.id}
 
@@ -85,13 +85,52 @@ def get_race_detail(id):
     'race': race_deets
   })
 
-@app.route('/races/create', methods=['POST'])
-def create_race():
-  raise NotImplementedError
+@app.route('/races', methods=['POST'])
+def submit_race():
+  data = request.get_json()
 
-@app.route('/distances/create', methods=['POST'])
-def create_distance():
-  raise NotImplementedError
+  #fail if distance id is bad
+  if Distance.query.get(data['distance_id']) is None:
+    abort(404)
+
+  try:
+    Race(
+      name = data['name'],
+      city = data['city'],
+      state = data['state'],
+      website = data['website'],
+      distance_id = data['distance_id'],
+      date = datetime.strptime(data['date'], '%Y-%m-%d')
+    ).insert()
+  except Exception as e:
+    print(e)
+    abort(400)
+
+  return jsonify({
+    'success': True
+  })
+
+@app.route('/distances', methods=['POST'])
+def submit_distance():
+  data = request.get_json()
+  try:
+    #distance conversions
+    if 'distance_km' in data:
+      distance_km = data['distance_km']
+    elif 'distance_mi' in data:
+      distance_mi = data['distance_mi']
+      distance_km = distance_mi / KM_2_MILE
+
+    Distance(
+      name = data['name'],
+      distance_km = distance_km
+    ).insert()
+  except:
+    abort(400)
+
+  return jsonify({
+    'success': True
+  })
 
 @app.route('/races/<int:id>', methods=['PATCH'])
 def update_race(payload, id):
@@ -115,7 +154,7 @@ def delete_distance(payload, id):
 def bad_request(error):
     return jsonify({
         "success": False,
-        "error": 40,
+        "error": 400,
         "message": "Bad Request"
     }), 400
 
@@ -149,11 +188,11 @@ def method_not_allowed(error):
 
 @app.errorhandler(422)
 def unprocessable(error):
-    return jsonify({
-                    "success": False, 
-                    "error": 422,
-                    "message": "unprocessable"
-                    }), 422
+  return jsonify({
+    "success": False, 
+    "error": 422,
+    "message": "unprocessable"
+    }), 422
 
 '''
 @TODO implement error handler for AuthError
