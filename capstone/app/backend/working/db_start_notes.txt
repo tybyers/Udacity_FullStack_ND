@@ -3,9 +3,9 @@
 
 INSERT INTO distance (name, distance_km, distance_mi)
 VALUES 
-  ("Marathon", 42.195, 42.195 * 0.621371),
-  ("25K", 25, 25 * 0.621371),
-  ("12K", 12, 12 * 0.621371);
+  ("Marathon", 42.195, 26.22),
+  ("25K", 25, 15.53),
+  ("12K", 12, 12 * 7.46);
 
 INSERT INTO race (name, city, state, website, distance_id, date)
 VALUES
@@ -14,3 +14,7 @@ VALUES
   ('Riverbank Run', 'Grand Rapids', 'MI', 'https://amwayriverbankrun.com/', 2, '2020-10-18'),
   ('LA Marathon', 'Los Angeles', 'CA', 'https://www.lamarathon.com/', 1, '2019-03-05');
   
+
+To test:
+
+cp working/database_default.db test_database.db
