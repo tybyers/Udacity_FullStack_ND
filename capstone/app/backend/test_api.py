@@ -6,6 +6,9 @@ from flask_sqlalchemy import SQLAlchemy
 from api import create_app
 from models import setup_db, Race, Distance
 
+# prior to running these tests, please `cp working/database_default.db test_database.db`
+#  from the same directory as these tests. Otherwise, they may fail due to the
+#  delete step
 class RacesTestCase(unittest.TestCase):
     """This class tests the api for Distances and Races"""
 
@@ -65,7 +68,7 @@ class RacesTestCase(unittest.TestCase):
         self.assertIn('city', data['race'])
         self.assertGreaterEqual(len(data['race']), 1)
 
-        # test error behavior
+        # test failure behavior
         result = self.client().get('/races-detail/99999999')
         data = result.get_json()
         self.assertEqual(result.status_code, 404)
@@ -142,25 +145,99 @@ class RacesTestCase(unittest.TestCase):
         self.assertFalse(result_fail.get_json()['success'])
 
     def test_update_race(self):
-        pass
+        new_site = "http://www.newsite.com"
+        race_id = 1
+        # what's website for current race_id?
+        cur_site = self.client().get('/races-detail/{}'.format(race_id))
+        cur_site = cur_site.get_json()['race']['website']
+        self.assertNotEqual(new_site, cur_site)
+        # update the site
+        upd_site = self.client().patch('/races/{}'.format(race_id), 
+            json={'website': new_site})
+        self.assertEqual(upd_site.status_code, 200)
+        self.assertTrue(upd_site.get_json()['success'])
+        # did we change it?
+        changed_site = self.client().get('/races-detail/{}'.format(race_id)).get_json()['race']['website']
+        self.assertEqual(new_site, changed_site)
+        # change it back
+        upd_site = self.client().patch('/races/{}'.format(race_id), 
+            json={'website': cur_site})
+        self.assertEqual(upd_site.status_code, 200)
+        self.assertTrue(upd_site.get_json()['success'])
+        # verify changed it back
+        changed_back = self.client().get('/races-detail/{}'.format(race_id)).get_json()['race']['website']
+        self.assertEqual(cur_site, changed_back)
+
+        # check failure mode 1: no "website" in json
+        no_web = self.client().patch('/races/1', json={'DWEEBSITE': 'type'})
+        self.assertEqual(no_web.status_code, 422)
+        self.assertFalse(no_web.get_json()['success'])
+
+        # check failure mode 2: no race at ID
+        norace = self.client().patch('/races/99999999', json={})
+        self.assertEqual(norace.status_code, 404)
+        self.assertFalse(norace.get_json()['success'])
 
     def test_update_distance(self):
-        pass
+        # get the maximum ID
+        dist_id = str(max([int(id) for id in self.client().get('/distances').get_json()['distances'].keys()]))
+        dist_km = 200
+        new_dist = self.client().patch('/distances/{}'.format(dist_id), 
+                    json={'name': 'Ultramarathon','distance_km': dist_km})
+        self.assertEqual(new_dist.status_code, 200)
+        self.assertTrue(new_dist.get_json()['success'])
+        # get distances and see if has been changed
+        dist_dict = self.client().get('/distances').get_json()['distances'][dist_id]
+        self.assertEqual(dist_dict['name'], 'Ultramarathon')
+        self.assertEqual(dist_dict['distance_km'], dist_km)
+        # assure the distance param is nearly correct for km -> mi conversion
+        self.assertLess(dist_dict['distance_km'] * 0.62 - dist_dict['distance_mi'] , 1)
+        self.assertGreater(dist_dict['distance_km'] * 0.62 - dist_dict['distance_mi'] , -1)
+
+        # check failure mode 1: no distance params sent
+        no_dist = self.client().patch('/distances/1', json={'furlongs': 2})
+        self.assertEqual(no_dist.status_code, 422)
+        self.assertFalse(no_dist.get_json()['success'])
+
+        # check failure mode 2: no distance at ID
+        no_dist = self.client().patch('/distances/99999999', json={})
+        self.assertEqual(no_dist.status_code, 422)
+        self.assertFalse(no_dist.get_json()['success'])
 
     def test_delete_race(self):
-        pass
+        # get max race id and pop off the top of that (since we created a past race above)
+        race_id = str(max([int(id) for id in self.client().get('/races').get_json()['races']['past'].keys()]))
+        #print('max race_id: {}'.format(race_id))
+        deleted = self.client().delete('/races/{}'.format(race_id))
+        self.assertEqual(deleted.status_code, 200)
+        self.assertTrue(deleted.get_json()['success'])
+        
+        # check to see if race_id still is there
+        self.assertNotIn(race_id, self.client().get('/races').get_json()['races']['past'].keys())
+
+        # check failure mode
+        too_high = self.client().delete('/races/9999999999')
+        self.assertEqual(too_high.status_code, 422)
+        self.assertFalse(too_high.get_json()['success'])
 
     def test_delete_distance(self):
+        # get max distance id and pop off the top of that (since we created a distance above)
+        dist_id = str(max([int(id) for id in self.client().get('/distances').get_json()['distances'].keys()]))
+        deleted = self.client().delete('/distances/{}'.format(dist_id))
+        self.assertEqual(deleted.status_code, 200)
+        self.assertTrue(deleted.get_json()['success'])
+
+         # check to see if dist_id still is there
+        self.assertNotIn(dist_id, self.client().get('/distances').get_json()['distances'].keys())
+        
+        # check failure mode
+        too_high = self.client().delete('/distances/9999999999')
+        self.assertEqual(too_high.status_code, 422)
+        self.assertFalse(too_high.get_json()['success'])
+
+    def test_auth(self):
+        ## TODO!!!
         pass
-
-
-
-
-
-
-
-
-
 
 
 # Make the tests executable
