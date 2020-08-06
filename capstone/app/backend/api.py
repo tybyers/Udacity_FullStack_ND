@@ -24,8 +24,10 @@ def create_app(test_config=None):
   #available to public
   @app.route('/races', methods=['GET'])
   def get_races():
-    upcoming_races = Race.query.filter(Race.date >= datetime.today()).all()
-    past_races = Race.query.filter(Race.date < datetime.today()).all()
+    upcoming_races = Race.query.filter(Race.date >= datetime.today()).\
+      join(Distance, Race.distance_id == Distance.id).all()
+    past_races = Race.query.filter(Race.date < datetime.today()).\
+      join(Distance, Race.distance_id == Distance.id).all()
     # TODO: join with distance to get better distance stuff
 
     def fill_details(raceq):
@@ -34,7 +36,9 @@ def create_app(test_config=None):
         "city": r.city,
         "state": r.state,
         "website": r.website,
-        "distance_id": r.distance_id,
+        "distance": r.distance.name,
+        "km": round(r.distance.distance_km, 2),
+        "miles": round(r.distance.distance_mi, 2),
         "date": r.date
       } for r in raceq}
 
@@ -276,17 +280,13 @@ def create_app(test_config=None):
       "message": "unprocessable"
       }), 422
 
-  '''
-  @TODO implement error handler for AuthError
-      error handler should conform to general task above 
-  '''
-  # @app.errorhandler(AuthError)
-  # def authentication_failed(AuthError):
-  #     return jsonify({
-  #         "success": False,
-  #         "error": AuthError.status_code,
-  #         "message": "Authentication failed: {}".format(AuthError)
-  #         }), 401
+  @app.errorhandler(AuthError)
+  def authentication_failed(AuthError):
+      return jsonify({
+          "success": False,
+          "error": AuthError.status_code,
+          "message": "Authentication failed: {}".format(AuthError)
+          }), 401
 
   return app
 
