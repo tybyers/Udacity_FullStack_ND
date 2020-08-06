@@ -1,13 +1,15 @@
 import json
+import os
 from flask import request, _request_ctx_stack
 from functools import wraps
 from jose import jwt
 from urllib.request import urlopen
 
 
-AUTH0_DOMAIN = 'udacity-tbyers.auth0.com'
-ALGORITHMS = ['RS256']
-API_AUDIENCE = 'ByersRaceSchedule'
+AUTH0_DOMAIN = os.environ['AUTH0_DOMAIN']
+ALGORITHMS = [os.environ['AUTH0_ALGORITHM']]
+API_AUDIENCE = os.environ['AUTH0_API_AUDIENCE']
+
 
 ## AuthError Exception
 '''
@@ -124,7 +126,6 @@ def verify_decode_jwt(token):
             }
     if rsa_key:
         try:
-            print('decoding payload for auth0_domain: {}'.format(AUTH0_DOMAIN))
             payload = jwt.decode(
                 token,
                 rsa_key,
@@ -132,7 +133,6 @@ def verify_decode_jwt(token):
                 audience=API_AUDIENCE,
                 issuer='https://' + AUTH0_DOMAIN + '/'
             )
-            print(payload)
 
             return payload
 

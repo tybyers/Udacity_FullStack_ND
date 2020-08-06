@@ -28,7 +28,6 @@ def create_app(test_config=None):
       join(Distance, Race.distance_id == Distance.id).all()
     past_races = Race.query.filter(Race.date < datetime.today()).\
       join(Distance, Race.distance_id == Distance.id).all()
-    # TODO: join with distance to get better distance stuff
 
     def fill_details(raceq):
       return {r.id: {
