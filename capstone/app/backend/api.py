@@ -5,6 +5,7 @@ from flask_cors import CORS
 from datetime import datetime
 
 from models import db_drop_and_create_all, setup_db, Race, Distance
+from auth.auth import AuthError, requires_auth
 
 KM_2_MILE = 0.621371
 
@@ -20,10 +21,12 @@ def create_app(test_config=None):
     response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
     return response
 
+  #available to public
   @app.route('/races', methods=['GET'])
   def get_races():
     upcoming_races = Race.query.filter(Race.date >= datetime.today()).all()
     past_races = Race.query.filter(Race.date < datetime.today()).all()
+    # TODO: join with distance to get better distance stuff
 
     def fill_details(raceq):
       return {r.id: {
@@ -48,7 +51,8 @@ def create_app(test_config=None):
     })
 
   @app.route('/distances', methods=['GET'])
-  def get_distances():
+  @requires_auth('get:distance')
+  def get_distances(payload):
     distances = Distance.query.all()
 
     dists = {}
@@ -65,7 +69,8 @@ def create_app(test_config=None):
     })
 
   @app.route('/races-detail/<int:id>', methods=['GET'])
-  def get_race_detail(id):
+  @requires_auth('get:race-details')
+  def get_race_detail(payload, id):
     race = Race.query.filter(Race.id == id).\
       join(Distance, Race.distance_id == Distance.id).first() 
 
@@ -86,7 +91,8 @@ def create_app(test_config=None):
     })
 
   @app.route('/races', methods=['POST'])
-  def submit_race():
+  @requires_auth('post:race')
+  def submit_race(payload):
     data = request.get_json()
 
     #fail if distance id is bad
@@ -111,7 +117,8 @@ def create_app(test_config=None):
     })
 
   @app.route('/distances', methods=['POST'])
-  def submit_distance():
+  @requires_auth('post:distance')
+  def submit_distance(payload):
     data = request.get_json()
     try:
       #distance conversions
@@ -133,7 +140,8 @@ def create_app(test_config=None):
     })
 
   @app.route('/races/<int:id>', methods=['PATCH'])
-  def update_race(id):
+  @requires_auth('patch:race')
+  def update_race(payload, id):
     # the only thing we should update for a race is the website,
     #  so that we can change the website to the results page
     data = request.get_json()
@@ -159,7 +167,8 @@ def create_app(test_config=None):
       abort(422)
 
   @app.route('/distances/<int:id>', methods=['PATCH'])
-  def update_distance(id):
+  @requires_auth('patch:distance')
+  def update_distance(payload, id):
     data = request.get_json()
     if data is None:
       abort(422)
@@ -190,7 +199,8 @@ def create_app(test_config=None):
       abort(422)
 
   @app.route('/races/<int:id>', methods=['DELETE'])
-  def delete_race(id):
+  @requires_auth('delete:race')
+  def delete_race(payload, id):
     delete_me = Race.query.get(id)
 
     if delete_me is None:
@@ -206,9 +216,9 @@ def create_app(test_config=None):
       'success': True
     })
 
-
   @app.route('/distances/<int:id>', methods=['DELETE'])
-  def delete_distance(id):
+  @requires_auth('delete:distance')
+  def delete_distance(payload, id):
     delete_me = Distance.query.get(id)
 
     if delete_me is None:
