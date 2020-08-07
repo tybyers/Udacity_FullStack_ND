@@ -88,7 +88,7 @@ class Race(db.Model):
 
 class Distance(db.Model):
     """
-    Foot race distances
+    Foot race distances. Name, distance in km and distance in miles
     """
     __tablename__ = 'distance'
 

@@ -24,6 +24,10 @@ def create_app(test_config=None):
   #available to public
   @app.route('/races', methods=['GET'])
   def get_races():
+    '''
+    Get the races in the database. Separates into upcoming and past based on the
+    date compared to today's date.
+    '''
     upcoming_races = Race.query.filter(Race.date >= datetime.today()).\
       join(Distance, Race.distance_id == Distance.id).all()
     past_races = Race.query.filter(Race.date < datetime.today()).\
@@ -56,6 +60,10 @@ def create_app(test_config=None):
   @app.route('/distances', methods=['GET'])
   @requires_auth('get:distance')
   def get_distances(payload):
+    '''
+    Get the distances from the distance table. Distance name and distances
+    in km and miles.
+    '''
     distances = Distance.query.all()
 
     dists = {}
@@ -74,6 +82,9 @@ def create_app(test_config=None):
   @app.route('/races-detail/<int:id>', methods=['GET'])
   @requires_auth('get:race-details')
   def get_race_detail(payload, id):
+    '''
+    Get the details on a specific race based on the race ID.
+    '''
     race = Race.query.filter(Race.id == id).\
       join(Distance, Race.distance_id == Distance.id).first() 
 
@@ -96,6 +107,9 @@ def create_app(test_config=None):
   @app.route('/races', methods=['POST'])
   @requires_auth('post:race')
   def submit_race(payload):
+    '''
+    Submit a new race to the database.
+    '''
     data = request.get_json()
 
     #fail if distance id is bad
@@ -122,6 +136,9 @@ def create_app(test_config=None):
   @app.route('/distances', methods=['POST'])
   @requires_auth('post:distance')
   def submit_distance(payload):
+    '''
+    Submit a new distance to the database.
+    '''
     data = request.get_json()
     try:
       #distance conversions
@@ -145,8 +162,10 @@ def create_app(test_config=None):
   @app.route('/races/<int:id>', methods=['PATCH'])
   @requires_auth('patch:race')
   def update_race(payload, id):
-    # the only thing we should update for a race is the website,
-    #  so that we can change the website to the results page
+    '''
+    Update race data. The only thing we should update for a race is the website,
+    so that we can change the website to the results page
+    '''
     data = request.get_json()
     if data is None:
       abort(422)
@@ -172,6 +191,12 @@ def create_app(test_config=None):
   @app.route('/distances/<int:id>', methods=['PATCH'])
   @requires_auth('patch:distance')
   def update_distance(payload, id):
+    '''
+    Update the data for distances in the database. Can update
+    the distance name, distance km or distance miles. If both km and
+    miles are submitted, endpoint will default to changing the distance in
+    km, and then using the conversion to change the miles.
+    '''
     data = request.get_json()
     if data is None:
       abort(422)
@@ -204,6 +229,9 @@ def create_app(test_config=None):
   @app.route('/races/<int:id>', methods=['DELETE'])
   @requires_auth('delete:race')
   def delete_race(payload, id):
+    '''
+    Delete a race from the database.
+    '''
     delete_me = Race.query.get(id)
 
     if delete_me is None:
@@ -222,6 +250,9 @@ def create_app(test_config=None):
   @app.route('/distances/<int:id>', methods=['DELETE'])
   @requires_auth('delete:distance')
   def delete_distance(payload, id):
+    '''
+    Delete a distance from the database. 
+    '''
     delete_me = Distance.query.get(id)
 
     if delete_me is None:
@@ -237,7 +268,7 @@ def create_app(test_config=None):
       'success': True
     })
 
-  ## Error handling
+  ## Custom error handlers
   @app.errorhandler(400)
   def bad_request(error):
       return jsonify({
@@ -288,12 +319,6 @@ def create_app(test_config=None):
           }), 401
 
   return app
-
-#app = create_app()
-
-#db_drop_and_create_all()
-
-
 
 ## ------------------------
 ## Launch app
