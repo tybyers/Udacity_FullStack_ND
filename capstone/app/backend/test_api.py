@@ -250,9 +250,41 @@ class RacesTestCase(unittest.TestCase):
         self.assertEqual(too_high.status_code, 422)
         self.assertFalse(too_high.get_json()['success'])
 
-    # def test_auth(self):
-    #     ## TODO!!!
-    #     pass
+    # RBAC test -- for "member" role
+    def test_rbac_member(self):
+        # members should be able to get distances
+        # success mode
+        result = self.client().get('/distances', headers=auth_jwts['member'])
+        data = result.get_json()
+        self.assertEqual(result.status_code, 200)
+        self.assertTrue(data['success'])
+        self.assertGreaterEqual(len(data['distances']), 1)
+
+        # failure mode
+        # members should not be able to delete distances though
+        dist_id = str(max([int(id) for id in self.client().get('/distances', headers=auth_jwts['member']).get_json()['distances'].keys()]))
+        deleted = self.client().delete('/distances/{}'.format(dist_id), headers=auth_jwts['member'])
+        self.assertEqual(deleted.status_code, 401)
+        self.assertFalse(deleted.get_json()['success'])
+
+    # RBAC test -- for "admin" role
+    def test_rbac_admin(self):
+        # success mode
+        # should be able to delete a distance
+        dist_id = str(max([int(id) for id in self.client().get('/distances', headers=auth_jwts['admin']).get_json()['distances'].keys()]))
+        deleted = self.client().delete('/distances/{}'.format(dist_id),
+            headers=auth_jwts['admin'])
+        self.assertEqual(deleted.status_code, 200)
+        self.assertTrue(deleted.get_json()['success'])
+
+        # failure mode -- change the key so it's invalid
+        fake_auth_jwts = {'admin': {'Authorization': auth_jwts['admin']['Authorization'] + 'broken'}}
+        dist_id = str(max([int(id) for id in self.client().get('/distances', headers=auth_jwts['admin']).get_json()['distances'].keys()]))
+        deleted = self.client().delete('/distances/{}'.format(dist_id), 
+            headers=fake_auth_jwts['admin'])
+        self.assertEqual(deleted.status_code, 401)
+        self.assertFalse(deleted.get_json()['success'])
+
 
 
 # Make the tests executable
