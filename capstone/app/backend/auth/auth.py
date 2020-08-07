@@ -10,7 +10,6 @@ AUTH0_DOMAIN = os.environ['AUTH0_DOMAIN']
 ALGORITHMS = [os.environ['AUTH0_ALGORITHM']]
 API_AUDIENCE = os.environ['AUTH0_API_AUDIENCE']
 
-
 ## AuthError Exception
 '''
 AuthError Exception
