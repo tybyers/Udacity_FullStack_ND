@@ -4,7 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from datetime import datetime
 
-from models import db_drop_and_create_all, setup_db, Race, Distance
+from models import setup_db, Race, Distance
 from auth.auth import AuthError, requires_auth
 
 KM_2_MILE = 0.621371
@@ -94,8 +94,8 @@ def create_app(test_config=None):
     race_deets = {'name': race.name, 'date': race.date,
                   'city': race.city, 'state': race.state,
                   'distance_name': race.distance.name,
-                  'distance_km': race.distance.distance_km,
-                  'distance_mi': race.distance.distance_mi,
+                  'distance_km': round(race.distance.distance_km, 2),
+                  'distance_mi': round(race.distance.distance_mi, 2),
                   'website': race.website,
                   'race_id': id, 'distance_id': race.distance.id}
 

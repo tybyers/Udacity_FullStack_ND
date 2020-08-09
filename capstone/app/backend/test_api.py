@@ -21,9 +21,8 @@ class RacesTestCase(unittest.TestCase):
         """Initialize app and define the test variables"""
         self.app = create_app()
         self.client = self.app.test_client
-        self.db_filename = "test_database.db"
-        proj_dir = os.path.dirname(os.path.abspath(__file__))
-        self.database_path = "sqlite:///{}".format(os.path.join(proj_dir, self.db_filename))
+        database_name = "raceschedule_test"
+        self.database_path = "postgresql://{}/{}".format('localhost:5432', database_name)
         setup_db(self.app, self.database_path)
 
         # bind app to current context
