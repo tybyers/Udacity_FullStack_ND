@@ -5,7 +5,7 @@ INSERT INTO distance (name, distance_km, distance_mi)
 VALUES 
   ('Marathon', 42.195, 26.22),
   ('25K', 25, 15.53),
-  ('12K', 12, 12 * 7.46);
+  ('12K', 12, 7.46);
 
 INSERT INTO race (name, city, state, website, distance_id, date)
 VALUES

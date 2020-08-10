@@ -9,8 +9,9 @@ from datetime import datetime
 # database_path = "sqlite:///{}".format(os.path.join(proj_dir, db_filename))
 #import db_defaults as DBDEF
 
-database_name = "raceschedule"
-database_path = "postgres://{}/{}".format('localhost:5432', database_name)
+#database_name = "raceschedule"
+#database_path = "postgres://{}/{}".format('localhost:5432', database_name)
+database_path = os.environ['DATABASE_URL']
 db = SQLAlchemy()
 
 KM_2_MILE = 0.621371
