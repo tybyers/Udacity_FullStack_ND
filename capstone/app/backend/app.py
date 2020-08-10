@@ -5,7 +5,6 @@ from models import db
 app = create_app()
 migrate = Migrate(app, db)
 
-
 ## ------------------------
 ## Launch app
 ## ------------------------
