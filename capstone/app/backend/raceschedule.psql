@@ -116,7 +116,7 @@ ALTER TABLE ONLY public.race ALTER COLUMN id SET DEFAULT nextval('public.race_id
 COPY public.distance (id, name, distance_km, distance_mi) FROM stdin;
 1	Marathon	42.195	26.22
 2	25K	25	15.53
-3	12K	12	89.52
+3	12K	12	7.46
 \.
 
 
