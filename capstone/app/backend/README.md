@@ -250,8 +250,6 @@ Add a race to the schedule.
 }
 ```
 
-curl http://127.0.0.1:5000/races  -X POST -H "Content-Type: application/json" -d '{"name": "MTC Marathon", "city": "Minneapolis", "state": "MN", "website": "https://www.mtecresults.com/race/leaderboard/5829/2017_Medtronic_Twin_Cities_Marathon-Wheelchair", "distance_id": 1, "date": "2017-10-01"}'
-
 #### Response Body
 
 ```
@@ -346,6 +344,7 @@ As with the `POST` request, `distance_km` updates take precedence over `distance
     'distance_km': <dbl> (Optional) Updated distance in km,
     `distance_mi': <dbl> (Optional) Updated distance in miles
 }
+```
 
 #### Response Body
 ```
