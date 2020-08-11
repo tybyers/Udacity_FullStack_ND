@@ -1,0 +1,36 @@
+<html>
+    <head>
+        <title>Races</title>
+    </head>
+    <body>
+    <h3>Upcoming Races:</h3>
+        <ul>
+            {% for d in data.upcoming%}
+            <li><b>{{d.name}}</b>
+                <ul>
+                    <!-- <li><b>Distance:</b> {{d.distance_name}}</li> -->
+                    <li><b>Distance ID: </b> {{d.distance_id}}</li>
+                    <li><b>Date:</b> {{d.date}}</li>
+                    <li><b>Location: </b> {{d.city}}, {{d.state}}</li>
+                    <li><b>Website:</b> <a href='{{d.website}}'>{{d.website}}</a></li>
+                </ul>
+            </li>
+            {% endfor %}
+        </ul>
+    <h3>Past Races:</h3>
+        <ul>
+            {% for d in data.past %}
+            <li><b>{{d.name}}</b>
+                <ul>
+                    <!-- <li><b>Distance:</b> {{d.distance_name}}</li> -->
+                    <li><b>Distance ID: </b> {{d.distance_id}}</li>
+                    <li><b>Date:</b> {{d.date}}</li>
+                    <li><b>Location: </b> {{d.city}}, {{d.state}}</li>
+                    <li><b>Website:</b> <a href='{{d.website}}'>{{d.website}}</a></li>
+                </ul>
+            </li>
+            {% endfor %}
+        </ul>
+    </h3>
+    </body>
+</html>
