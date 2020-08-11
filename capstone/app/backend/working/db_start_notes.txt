@@ -13,8 +13,3 @@ VALUES
   ('MTC Marathon', 'Minneapolis', 'MN', 'https://www.tcmevents.org/', 1, '2020-10-05'),
   ('Riverbank Run', 'Grand Rapids', 'MI', 'https://amwayriverbankrun.com/', 2, '2020-10-18'),
   ('LA Marathon', 'Los Angeles', 'CA', 'https://www.lamarathon.com/', 1, '2019-03-05');
-  
-
-To test:
-
-cp working/database_default.db test_database.db
